@@ -38,60 +38,60 @@ function M.snacks_picker()
     return
   end
 
-  -- 尝试不同的 Snacks picker API
-  local picker_ok = false
+  -- Snacks picker 期望的正确格式
+  local items = {}
+  for i, type_info in ipairs(java_types) do
+    table.insert(items, {
+      text = type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc,
+      value = type_info.name,
+      idx = i,
+    })
+  end
 
-  -- 方法1: 尝试新版 API
-  if snacks.picker and snacks.picker.pick then
-    picker_ok = pcall(function()
-      local items = {}
+  -- 使用正确的 Snacks picker API
+  local picker_ok, err = pcall(function()
+    snacks.picker.pick({
+      prompt = 'Select Java Type',
+      items = items,
+      format = function(item, ctx)
+        return item.text
+      end,
+      on_submit = function(item, ctx)
+        if item and item.value then
+          core.create_java_file_type(item.value)
+        end
+      end,
+    })
+  end)
+
+  if not picker_ok then
+    -- 如果还是失败，尝试更简单的格式
+    picker_ok, err = pcall(function()
+      local simple_items = {}
       for _, type_info in ipairs(java_types) do
-        table.insert(items, {
+        table.insert(simple_items, {
           text = type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc,
-          value = type_info.name,
+          java_type = type_info.name,
         })
       end
 
-      snacks.picker.pick({
+      snacks.picker.select({
         prompt = 'Select Java Type',
-        items = items,
+        items = simple_items,
         format = function(item)
           return item.text
         end,
-        on_submit = function(item)
-          if item then
-            core.create_java_file_type(item.value)
-          end
-        end,
-      })
-    end)
-  end
-
-  -- 方法2: 尝试简单版本
-  if not picker_ok and snacks.picker then
-    picker_ok = pcall(function()
-      local choices = {}
-      for _, type_info in ipairs(java_types) do
-        table.insert(choices, type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc)
-      end
-
-      snacks.picker({
-        prompt = 'Select Java Type',
-        choices = choices,
-      }, function(choice)
-        if choice then
-          local java_type = choice:match('(%w+) %-')
-          if java_type then
-            core.create_java_file_type(java_type)
-          end
+      }, function(item)
+        if item and item.java_type then
+          core.create_java_file_type(item.java_type)
         end
       end)
     end)
   end
 
-  -- 降级到原生选择器
+  -- 最后降级到原生选择器
   if not picker_ok then
-    vim.notify('Snacks picker API not compatible, using native picker', vim.log.levels.WARN)
+    vim.notify('Snacks picker error: ' .. (err or 'unknown'), vim.log.levels.WARN)
     M.native_picker()
   end
 end
