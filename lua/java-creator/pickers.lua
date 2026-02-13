@@ -31,27 +31,69 @@ end
 
 -- Snacks picker implementation
 function M.snacks_picker()
-  local snacks = require('snacks')
-
-  local items = {}
-  for _, type_info in ipairs(java_types) do
-    table.insert(items, {
-      text = type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc,
-      value = type_info.name,
-    })
+  local ok, snacks = pcall(require, 'snacks')
+  if not ok then
+    vim.notify('Snacks not available, falling back to native picker', vim.log.levels.WARN)
+    M.native_picker()
+    return
   end
 
-  snacks.picker({
-    prompt = 'Select Java Type',
-    source = items,
-    format = function(item)
-      return item.text
-    end,
-  }, function(item)
-    if item then
-      core.create_java_file_type(item.value)
-    end
-  end)
+  -- 尝试不同的 Snacks picker API
+  local picker_ok = false
+
+  -- 方法1: 尝试新版 API
+  if snacks.picker and snacks.picker.pick then
+    picker_ok = pcall(function()
+      local items = {}
+      for _, type_info in ipairs(java_types) do
+        table.insert(items, {
+          text = type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc,
+          value = type_info.name,
+        })
+      end
+
+      snacks.picker.pick({
+        prompt = 'Select Java Type',
+        items = items,
+        format = function(item)
+          return item.text
+        end,
+        on_submit = function(item)
+          if item then
+            core.create_java_file_type(item.value)
+          end
+        end,
+      })
+    end)
+  end
+
+  -- 方法2: 尝试简单版本
+  if not picker_ok and snacks.picker then
+    picker_ok = pcall(function()
+      local choices = {}
+      for _, type_info in ipairs(java_types) do
+        table.insert(choices, type_info.icon .. ' ' .. type_info.name .. ' - ' .. type_info.desc)
+      end
+
+      snacks.picker({
+        prompt = 'Select Java Type',
+        choices = choices,
+      }, function(choice)
+        if choice then
+          local java_type = choice:match('(%w+) %-')
+          if java_type then
+            core.create_java_file_type(java_type)
+          end
+        end
+      end)
+    end)
+  end
+
+  -- 降级到原生选择器
+  if not picker_ok then
+    vim.notify('Snacks picker API not compatible, using native picker', vim.log.levels.WARN)
+    M.native_picker()
+  end
 end
 
 -- Telescope picker implementation
