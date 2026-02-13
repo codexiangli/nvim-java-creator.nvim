@@ -20,7 +20,7 @@
 
 ```lua
 {
-  'your-username/nvim-java-creator.nvim',
+  'codexiangli/nvim-java-creator.nvim',
   dependencies = {
     -- 可选：选择你喜欢的选择器
     'folke/snacks.nvim',          -- 推荐
