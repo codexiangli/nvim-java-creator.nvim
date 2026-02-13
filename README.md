@@ -38,7 +38,7 @@
 
 ```lua
 use {
-  'your-username/nvim-java-creator.nvim',
+  'codexiangli/nvim-java-creator.nvim',
   requires = {
     'folke/snacks.nvim', -- 可选
   },
