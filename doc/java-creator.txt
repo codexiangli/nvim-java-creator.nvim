@@ -1,0 +1,180 @@
+*java-creator.txt*         Create Java files with multi-module support
+
+Author: Your Name
+License: MIT
+
+==============================================================================
+CONTENTS                                                 *java-creator-contents*
+
+1. Introduction........................|java-creator-introduction|
+2. Installation........................|java-creator-installation|
+3. Configuration.......................|java-creator-configuration|
+4. Usage...............................|java-creator-usage|
+5. Commands............................|java-creator-commands|
+6. Functions...........................|java-creator-functions|
+7. Examples............................|java-creator-examples|
+
+==============================================================================
+1. INTRODUCTION                                      *java-creator-introduction*
+
+nvim-java-creator.nvim is a powerful Neovim plugin for creating Java files
+with intelligent multi-module project support.
+
+Features:
+- Multi-module project detection (Maven/Gradle)
+- Smart package name inference from current directory
+- Support for Class, Interface, Enum, Abstract Class, Record, Annotation
+- Beautiful pickers (Snacks, Telescope, FZF, native)
+- Test file creation with JUnit templates
+- Automatic directory creation
+- Configurable templates and keymaps
+
+==============================================================================
+2. INSTALLATION                                      *java-creator-installation*
+
+Using lazy.nvim: >
+    {
+      'your-username/nvim-java-creator.nvim',
+      dependencies = { 'folke/snacks.nvim' }, -- Optional
+      config = function()
+        require('java-creator').setup()
+      end,
+      ft = 'java',
+    }
+<
+
+Using packer.nvim: >
+    use {
+      'your-username/nvim-java-creator.nvim',
+      requires = { 'folke/snacks.nvim' }, -- Optional
+      config = function()
+        require('java-creator').setup()
+      end,
+      ft = 'java',
+    }
+<
+
+==============================================================================
+3. CONFIGURATION                                    *java-creator-configuration*
+
+Default configuration: >
+    require('java-creator').setup({
+      picker = 'auto',
+      author = nil, -- Auto-detected from git config
+      keymaps = {
+        create_class = '<leader>jc',
+        create_with_picker = '<leader>jC',
+        create_test = '<leader>jt',
+        create_interface = '<leader>ji',
+        create_enum = '<leader>je',
+        create_abstract = '<leader>ja',
+        create_record = '<leader>jr',
+        create_annotation = '<leader>j@',
+      },
+      templates = {
+        class = { extends = nil, implements = {} },
+        interface = { extends = {} },
+      },
+      auto_imports = {
+        test = {
+          'org.junit.jupiter.api.Test',
+          'org.junit.jupiter.api.BeforeEach',
+          'org.junit.jupiter.api.DisplayName',
+        },
+      },
+    })
+<
+
+Configuration options:
+
+*picker*        (string) Picker to use: 'auto', 'snacks', 'telescope', 'fzf', 'native'
+*author*        (string) Author name for JavaDoc (auto-detected from git config)
+*keymaps*       (table) Key mappings for different creation functions
+*templates*     (table) Template customization for different Java types
+*auto_imports*  (table) Automatic imports for different file types
+
+==============================================================================
+4. USAGE                                                    *java-creator-usage*
+
+Default keymaps:
+
+*<leader>jc*     Create Java class (direct)
+*<leader>jC*     Create Java file with type picker
+*<leader>jt*     Create test class
+*<leader>ji*     Create interface
+*<leader>je*     Create enum
+*<leader>ja*     Create abstract class
+*<leader>jr*     Create record
+*<leader>j@*     Create annotation
+
+==============================================================================
+5. COMMANDS                                              *java-creator-commands*
+
+*:JavaCreate*                Open type picker to create Java file
+*:JavaCreateClass*           Create Java class directly
+*:JavaCreateTest*            Create test class
+*:JavaCreateInterface*       Create interface
+*:JavaCreateEnum*            Create enum
+*:JavaCreatorSetup*          Manual setup with optional config
+
+==============================================================================
+6. FUNCTIONS                                            *java-creator-functions*
+
+*require('java-creator').setup({opts})*
+    Setup the plugin with configuration options.
+
+*require('java-creator').create_class()*
+    Create a Java class.
+
+*require('java-creator').create_with_picker()*
+    Show type picker to create Java file.
+
+*require('java-creator').create_test()*
+    Create a test class.
+
+*require('java-creator').create_interface()*
+    Create an interface.
+
+*require('java-creator').create_enum()*
+    Create an enum.
+
+*require('java-creator').create_abstract_class()*
+    Create an abstract class.
+
+*require('java-creator').create_record()*
+    Create a record.
+
+*require('java-creator').create_annotation()*
+    Create an annotation.
+
+==============================================================================
+7. EXAMPLES                                              *java-creator-examples*
+
+Basic setup: >
+    require('java-creator').setup()
+<
+
+Custom configuration: >
+    require('java-creator').setup({
+      picker = 'telescope',
+      author = 'John Doe',
+      keymaps = {
+        create_class = '<leader>cc',
+        create_with_picker = '<leader>cp',
+      },
+      templates = {
+        class = {
+          extends = 'BaseEntity',
+          implements = {'Serializable'},
+        },
+      },
+    })
+<
+
+Disable keymaps: >
+    require('java-creator').setup({
+      keymaps = false,
+    })
+<
+
+vim:tw=78:ts=8:ft=help:norl:
